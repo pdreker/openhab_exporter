@@ -3,7 +3,7 @@ name: Build Dev Docker image
 on:
   pull_request:
     branches:
-    - master
+    - main
 
 jobs:
   build-docker:
