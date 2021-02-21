@@ -1,0 +1,35 @@
+name: Build Docker image
+
+on:
+  pull_request:
+    branches:
+      - master
+    types:
+      - closed
+
+jobs:
+  build-docker:
+    runs-on: ubuntu-latest
+    name: Build Docker Image
+    steps:
+      - name: Update SemVer
+        id: update_semver
+        uses: K-Phoen/semver-release-action@master
+        with:
+          release_branch: master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Build Docker Image
+        if: success()
+        run: |
+          image=pdreker/openhab_exporter
+          tag=${{ steps.update_semver.outputs.tag }}
+          echo ${{secrets.DOCKER_HUB }} | docker login -u pdreker --password-stdin
+          docker buildx build --platform linux/arm/v6,linux/arm/v7,linux/amd64,linux/arm64/v8 -t $image:$tag --push .
+          docker buildx build --platform linux/arm/v6,linux/arm/v7,linux/amd64,linux/arm64/v8 -t $image:latest --push .
