@@ -11,5 +11,5 @@ def run():
     
     items = [ x['name'] for x in item_response.json() ]
     config =  { 'config': {'items': { 'include': sorted(items, key=str.lower) }}}
-    print(yaml.dump(config))    
+    print(yaml.dump(config))
 

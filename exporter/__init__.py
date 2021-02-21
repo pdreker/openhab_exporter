@@ -5,10 +5,15 @@ import yaml, logging, asyncio
 from pprint import pprint
 from .collector import OpenHABCollector
 
+logger = logging.getLogger('collector')
+logger.setLevel(global_config._LOGLEVEL)
+logger.addHandler(logs.ch)
+
 def run():
     REGISTRY.register(OpenHABCollector())
 
-    start_http_server(9876)
+    logger.info(f'Starting webserver on port {global_config.PORT}...')
+    start_http_server(global_config.PORT)
 
     loop = asyncio.get_event_loop()
     try:
