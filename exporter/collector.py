@@ -4,21 +4,28 @@ from prometheus_client.core import GaugeMetricFamily, CounterMetricFamily, REGIS
 from pprint import pprint
 
 logger = logging.getLogger('exporter')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(global_config._LOGLEVEL)
 logger.addHandler(logs.ch)
 
 config = None
-with open(global_config.CONFIG_FILE, 'r') as conffile:
-    conffile = yaml.safe_load(conffile)
+prefix = ''
+exclude_items = None
 
-config = conffile['config']
-prefix = config['prefix']
-exclude_items = config['items']['exclude']
+def read_configfile():
+    global prefix, config, exclude_items
+    logger.info(f'reading config file from {global_config.CONFIG_FILE}')
+    with open(global_config.CONFIG_FILE, 'r') as conffile:
+        conffile = yaml.safe_load(conffile)
+
+    config = conffile['config']
+    prefix = config['prefix']
+    exclude_items = config['items']['exclude']
 
 class OpenHABCollector(object):
     def __init__(self) -> None:
         super().__init__()
         self.metrics = Metrics()
+        read_configfile()
 
     def collect(self):
         logger.debug('Starting collection in custom collector')
@@ -43,7 +50,6 @@ class Metrics:
         if isinstance(value, str):
             regex = r'\D*(\d+\.{0,1}\d*)\D*'
             value = re.search(regex, value).group(1)
-        print(value)
         self.metrics[metric].add_metric([name], float(value))
 
     def add_metric(self, item):
@@ -53,7 +59,7 @@ class Metrics:
         value = item['state']
         if item['type'].lower() != 'group':
             if 'temperature' in tags and type == 'number:temperature':
-                logger.debug(f'Generating temperature metric for {item["name"]} as {prefix + "temperature_c"}')
+                logger.debug(f'Generating temperature metric for {item["name"]} as {prefix + "temperature_c"} (value: {value})')
                 self.new_metric('temperature_c', name, value)
             elif 'humidity' in tags and type == 'number:dimensionless':
                 logger.debug(f'Generating humidity metric for {item["name"]} as {prefix + "humidity_percent"}')

@@ -15,7 +15,7 @@ RUN pip --no-cache-dir install pipenv && \
 FROM python:3.9-alpine
 
 LABEL Name=openhab_exporter
-EXPOSE 9876
+EXPOSE 9791
 
 WORKDIR /app
 
