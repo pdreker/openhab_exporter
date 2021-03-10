@@ -94,7 +94,7 @@ class Metrics:
             else:
                 logger.debug(f'Uncategorized item {item["name"]}: category: {item["category"]}, type: {item["type"]}, tags: {item["tags"]}, state: {item["state"]}')
         else:
-            if item['groupType'].lower() == 'switch':
+            if item['groupType'] and item['groupType'].lower() == 'switch':
                 logger.debug(f'Generating switch state metric for group {item["name"]} as {prefix + "switch_state"}')
                 self.new_metric('switch_state', name, 1.0 if str(value).lower == 'on' else 0.0)
 
